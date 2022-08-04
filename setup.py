@@ -5,6 +5,8 @@ with open("README.md", "r") as fh:
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
+# strip version numbers
+required = [_r.split('=')[0] for _r in requirements]
 
 setuptools.setup(
     name="vraenn", # Replace with your own username
