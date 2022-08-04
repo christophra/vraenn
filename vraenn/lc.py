@@ -30,25 +30,44 @@ def distance_between_filters(filter1, filter2):
         u_weights=normalized[filter1], v_weights=normalized[filter2]
     )
 
-distance_matrix = np.array([[distance_between_filters(col, row) for col in filters] for row in filters])
-distance_matrix /= np.average(distance_matrix)
+
+class Metric:
+    """Defines a metric for use with the gaussian process kernel."""
+
+    distance_matrix = np.array([[distance_between_filters(col, row) for col in filters] for row in filters])
+    distance_matrix /= np.average(distance_matrix)
+
+    def __init__(self, p, mag_var):
+        self.p = p
+        self.mag_var = mag_var
+
+    def __call__(self, x1, x2, gamma):
+        """Each Metric instance must be callable, accepting these arguments."""
+        return self.metric(x1, x2)
+
+    def metric(self, x1, x2):
+        """Actual metric definition, a 2D gaussian of time and filter bands
+        using precomputed Wasserstein distances for the latter."""
+        band1 = (x1[1].astype(int))
+        band2 = (x2[1].astype(int))
+        time_distance = x2[0] - x1[0]
+        photometric_distance = self.distance_matrix[band1, band2]
+
+        return (
+            self.mag_var
+            * np.exp(
+                - photometric_distance**2/(2*self.p[0]**2)
+                - time_distance**2/(2*self.p[1]**2)
+                )
+            )
+
 
 def run_gp(Xt, Xf, Xfl, Xfle):
 
     mag_var = np.var(Xfl)
 
-    def metric(x1, x2, p):
-        band1 = (x1[1].astype(int))
-        band2 = (x2[1].astype(int))
-        time_distance = x2[0] - x1[0]
-        photometric_distance = distance_matrix[band1, band2]
-
-        return (
-            mag_var*np.exp(-photometric_distance**2/(2*p[0]**2) - time_distance**2/(2*p[1]**2))
-            )
-        
     def fit_gp(X, y, p):
-        cur_metric = lambda x1, x2, gamma: metric(x1, x2, p)
+        cur_metric = Metric(p, mag_var)
 
         kernel = PairwiseKernel(metric=cur_metric)
         gp = GaussianProcessRegressor(kernel=kernel,
