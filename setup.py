@@ -7,7 +7,7 @@ with open('requirements.txt') as f:
     required = f.read().splitlines()
 # strip version numbers
 required = [_r.split('=')[0] for _r in required]
-required += ['wheel']
+required = ['wheel']
 
 setuptools.setup(
     name="vraenn",
@@ -19,6 +19,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/christophra/vraenn",
     packages=setuptools.find_packages(),
+    setup_requires=['wheel'],
     install_requires=required,
     classifiers=[
         "Programming Language :: Python :: 3",
