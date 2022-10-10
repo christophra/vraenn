@@ -9,4 +9,5 @@ vraenn/vraenn.py
 vraenn.egg-info/PKG-INFO
 vraenn.egg-info/SOURCES.txt
 vraenn.egg-info/dependency_links.txt
+vraenn.egg-info/requires.txt
 vraenn.egg-info/top_level.txt
